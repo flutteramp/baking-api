@@ -21,11 +21,12 @@ import (
 )
 
 type UserHandler struct {
-	UserService user.UserService
+	UserService  user.UserService
+	tokenService Rtoken.Service
 }
 
-func NewUserHandler(us user.UserService) *UserHandler {
-	return &UserHandler{UserService: us}
+func NewUserHandler(us user.UserService, ts Rtoken.Service) *UserHandler {
+	return &UserHandler{UserService: us, tokenService: ts}
 }
 
 func (uh *UserHandler) GetSingleUser(w http.ResponseWriter,
@@ -68,7 +69,24 @@ func (uh *UserHandler) GetSingleUser(w http.ResponseWriter,
 
 func (uh *UserHandler) Authenticated(next http.HandlerFunc) http.HandlerFunc {
 	// validate the token
+
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		// token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2IiwiZXhwIjoxNjQ4OTMyMzA4LCJpYXQiOjE2MTQ2MzE1MDgsIm5iZiI6MTYxNDYzMTUwOH0.JjR0VofIMkzA_70MLSm02Qx49bb4domH8v-opLUhJdw"
+		// check, err := uh.tokenService.ValidateToken(token)
+		// if !check {
+		// 	fmt.Println("not authenticated")
+		// 	w.Header().Set("Content-Type", "application/json")
+		// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		// 	return
+
+		// }
+		// if err != nil {
+		// 	fmt.Println("error")
+
+		// 	w.Header().Set("Content-Type", "application/json")
+		// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		// 	return
+		// }
 		// _token := r.Header.Get("Authorization")
 		// _token = strings.Replace(_token, "Bearer ", "", 1)
 		// // valid, err := uh.tokenService.ValidateToken(_token)
@@ -151,11 +169,11 @@ func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("THE ID ISSSSSSSSSSSS")
 	fmt.Println(user.ID)
-	tokenString, err := Rtoken.GenerateJwtToken([]byte(Rtoken.GenerateRandomID(32)), Rtoken.CustomClaims{
+	tokenString, err := uh.tokenService.GenerateJwtToken(Rtoken.CustomClaims{
 
 		SessionId: strconv.Itoa(int(user1.ID)),
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().AddDate(0, 1, 1).Unix(),
+			ExpiresAt: time.Now().AddDate(1, 1, 1).Unix(),
 			IssuedAt:  time.Now().Unix(),
 			NotBefore: time.Now().Unix(),
 		},

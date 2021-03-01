@@ -14,9 +14,9 @@ import (
 	comrep "github.com/flutteramp/baking-api/comment/repository"
 	comser "github.com/flutteramp/baking-api/comment/service"
 
+	Rtoken "github.com/flutteramp/baking-api/baking/rtoken"
 	userrep "github.com/flutteramp/baking-api/user/repository"
 	userser "github.com/flutteramp/baking-api/user/service"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -50,6 +50,7 @@ func main() {
 	dbconn.AutoMigrate(&entity.Comment{})
 	dbconn.AutoMigrate(&entity.Ingredient{})
 	dbconn.AutoMigrate(&entity.Step{})
+	token := Rtoken.Service{}
 	recipeRepo := resrep.NewRecipeGormRepo(dbconn)
 	recipeService := resser.NewRecipeService(recipeRepo)
 	recipeHandler := handler.NewRecipeHandler(recipeService)
@@ -60,7 +61,7 @@ func main() {
 
 	userRepo := userrep.NewUserGormRepo(dbconn)
 	userService := userser.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, token)
 
 	router1 := mux.NewRouter()
 	//router := httprouter.New()
