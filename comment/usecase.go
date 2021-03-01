@@ -1,6 +1,6 @@
 package comment
 
-import "github.com/flutter-amp/baking-api/entity"
+import "github.com/flutteramp/baking-api/entity"
 
 type CommentService interface {
 	Comments() ([]entity.Comment, []error)

@@ -3,22 +3,22 @@ package main
 import (
 	"net/http"
 
-	"github.com/flutter-amp/baking-api/baking/http/handler"
-	"github.com/flutter-amp/baking-api/entity"
+	"github.com/flutteramp/baking-api/baking/http/handler"
+	"github.com/flutteramp/baking-api/entity"
+	"github.com/gorilla/mux"
 
-	resrep "github.com/flutter-amp/baking-api/recipe/repository"
-	resser "github.com/flutter-amp/baking-api/recipe/service"
+	resrep "github.com/flutteramp/baking-api/recipe/repository"
+	resser "github.com/flutteramp/baking-api/recipe/service"
 
 	//userhand "github.com/flutter-amp/baking-api/recipe/service"
-	comrep "github.com/flutter-amp/baking-api/comment/repository"
-	comser "github.com/flutter-amp/baking-api/comment/service"
+	comrep "github.com/flutteramp/baking-api/comment/repository"
+	comser "github.com/flutteramp/baking-api/comment/service"
 
-	userrep "github.com/flutter-amp/baking-api/user/repository"
-	userser "github.com/flutter-amp/baking-api/user/service"
+	userrep "github.com/flutteramp/baking-api/user/repository"
+	userser "github.com/flutteramp/baking-api/user/service"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/julienschmidt/httprouter"
 )
 
 // func createTables(dbconn *gorm.DB) []error {
@@ -62,32 +62,47 @@ func main() {
 	userService := userser.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	router := httprouter.New()
-	router.GET("/recipes", recipeHandler.GetRecipes)
-	router.GET("/ingredients/:id", recipeHandler.GetIngredients)
-	router.GET("/steps/:id", recipeHandler.GetSteps)
-	router.POST("/recipes/new", recipeHandler.PostRecipe)
-	router.POST("/recipes/newImage/:id", recipeHandler.PostImage)
-	router.GET("/recipes/get/:id", recipeHandler.GetSingleRecipe)
-	router.GET("/recipe/image/:id", recipeHandler.GetSingleRecipe)
-	router.DELETE("/recipes/delete/:id", recipeHandler.DeleteRecipe)
-	router.PUT("/recipes/update/:id", recipeHandler.PutRecipe)
-	router.GET("/user/:uid/recipes", recipeHandler.GetUserRecipes)
+	router1 := mux.NewRouter()
+	//router := httprouter.New()
 
-	router.GET("/comments", commentHandler.GetComments)
-	router.POST("/comments/new", commentHandler.PostComment)
-	router.GET("/comments/get/:id", commentHandler.GetSingleComment)
-	router.GET("/recipe/comments/:rid", commentHandler.GetCommentsByRecipe)
-	router.PUT("/comments/update/:id", commentHandler.PutComment)
-	router.DELETE("/comments/delete/:id", commentHandler.DeleteComment)
+	router1.HandleFunc("/recipes", userHandler.Authenticated(recipeHandler.GetRecipes)).Methods("GET")
+	router1.HandleFunc("/recipes/new", userHandler.Authenticated(recipeHandler.PostRecipe)).Methods("POST")
+	router1.HandleFunc("/recipes/{id}/ingredients", userHandler.Authenticated(recipeHandler.GetIngredients)).Methods("GET")
+	router1.HandleFunc("/recipes/{id}/steps", userHandler.Authenticated(recipeHandler.GetSteps)).Methods("GET")
+	router1.HandleFunc("/recipe/{id}", userHandler.Authenticated(recipeHandler.GetSingleRecipe)).Methods("GET")
+	router1.HandleFunc("/recipes/delete/{id}", userHandler.Authenticated(recipeHandler.DeleteRecipe)).Methods("DELETE")
+	router1.HandleFunc("/recipes/update/{id}", userHandler.Authenticated(recipeHandler.PutRecipe)).Methods("PUT")
+	router1.HandleFunc("/user/{uid}/recipes", userHandler.Authenticated(recipeHandler.GetUserRecipes)).Methods("GET")
 
-	router.POST("/signup", userHandler.SignUp)
-	router.POST("/login", userHandler.Login)
-	router.GET("/users/:id", userHandler.GetSingleUser)
-	//http.HandleFunc("/login", uh.Login)
-	//	http.HandleFunc("/signup", uh.SignUp)
+	router1.HandleFunc("/comments", userHandler.Authenticated(commentHandler.GetComments)).Methods("GET")
+	router1.HandleFunc("/comments/new", userHandler.Authenticated(commentHandler.PostComment)).Methods("POST")
+	router1.HandleFunc("/comments/get/{id}", userHandler.Authenticated(commentHandler.GetSingleComment)).Methods("GET")
+	router1.HandleFunc("/recipe/comments/{rid}", userHandler.Authenticated(commentHandler.GetCommentsByRecipe)).Methods("GET")
+	router1.HandleFunc("/comments/update/{id}", userHandler.Authenticated(commentHandler.PutComment)).Methods("PUT")
+	router1.HandleFunc("/comments/delete/{id}", userHandler.Authenticated(commentHandler.DeleteComment)).Methods("DELETE")
+	router1.HandleFunc("/users/{id}", userHandler.Authenticated(userHandler.GetSingleUser)).Methods("GET")
 
-	http.ListenAndServe(":8181", router)
+	router1.HandleFunc("/login", userHandler.Login).Methods("POST")
+	router1.HandleFunc("/signup", userHandler.SignUp).Methods("POST")
+	http.ListenAndServe(":8181", router1)
+
+	// router.GET("/recipes", recipeHandler.GetRecipes)
+	//router.GET("/recipe/image/:id", recipeHandler.GetSingleRecipe)
+	// router.DELETE("/recipes/delete/:id", recipeHandler.DeleteRecipe)
+	//router.PUT("/recipes/update/:id", recipeHandler.PutRecipe)
+	//router.GET("/user/:uid/recipes", recipeHandler.GetUserRecipes)
+	//	router.GET("recipes/{id}/ingredients/", recipeHandler.GetIngredients)
+	// router.POST("/recipes/newImage/:id", recipeHandler.PostImage)
+
+	//	router.GET("/comments", commentHandler.GetComments)
+	//router.POST("/comments/new", commentHandler.PostComment)
+	//router.GET("/comments/get/:id", commentHandler.GetSingleComment)
+	//router.GET("/recipe/comments/:rid", commentHandler.GetCommentsByRecipe)
+	//router.PUT("/comments/update/:id", commentHandler.PutComment)
+	//router.DELETE("/comments/delete/:id", commentHandler.DeleteComment)
+	// router.POST("/signup", userHandler.SignUp)
+	// router.POST("/login", userHandler.Login)
+	//router.GET("/users/:id", userHandler.GetSingleUser)
 }
 
 // func configSess() *entity.Session {

@@ -1,6 +1,6 @@
 package recipe
 
-import "github.com/flutter-amp/baking-api/entity"
+import "github.com/flutteramp/baking-api/entity"
 
 type RecipeRepository interface {
 	Recipes() ([]entity.Recipe, []error)

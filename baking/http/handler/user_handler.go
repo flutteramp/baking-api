@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/flutter-amp/baking-api/baking/hash"
-	Rtoken "github.com/flutter-amp/baking-api/baking/rtoken"
-	"github.com/flutter-amp/baking-api/entity"
-	"github.com/flutter-amp/baking-api/user"
-	"github.com/julienschmidt/httprouter"
+	"github.com/flutteramp/baking-api/baking/hash"
+	Rtoken "github.com/flutteramp/baking-api/baking/rtoken"
+	"github.com/flutteramp/baking-api/entity"
+	"github.com/flutteramp/baking-api/user"
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 	// "github.com/flutter-amp/Baking-API/form"
 	// "github.com/flutter-amp/Baking-API/model"
@@ -29,10 +29,16 @@ func NewUserHandler(us user.UserService) *UserHandler {
 }
 
 func (uh *UserHandler) GetSingleUser(w http.ResponseWriter,
-	r *http.Request, ps httprouter.Params) {
+	r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
-
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -71,21 +77,20 @@ func (uh *UserHandler) Authenticated(next http.HandlerFunc) http.HandlerFunc {
 		// //   return
 		// // }
 		next.ServeHTTP(w, r)
+
 	}
-	fmt.Println("authentication")
+
 	return http.HandlerFunc(fn)
 
 }
 
-func (uh *UserHandler) SignUp(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (uh *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("user handelr")
 
 	l := r.ContentLength
 	body := make([]byte, l)
 	r.Body.Read(body)
 	user := &entity.User{}
-	fmt.Println("in post user 2")
-
 	err := json.Unmarshal(body, user)
 	fmt.Println(user)
 
@@ -110,14 +115,13 @@ func (uh *UserHandler) SignUp(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	output, _ := json.MarshalIndent(user, "", "\t\t")
-	// p := fmt.Sprintf("/api/recipe/%d", recipe.ID)
-	// w.Header().Set("Location", p)
+
 	w.WriteHeader(http.StatusCreated)
 	w.Write(output)
 	return
 
 }
-func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("user handelr")
 
 	l := r.ContentLength
@@ -136,7 +140,7 @@ func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	user1, errs := uh.UserService.UserByEmail(user.Email)
-	fmt.Println("sencond fffffffffffffff")
+
 	fmt.Println(user1)
 	if len(errs) > 0 || !hash.ArePasswordsSame(user1.Password, user.Password) {
 
@@ -169,10 +173,16 @@ func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request, ps httprout
 	return
 }
 
-func (uh *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (uh *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
-
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -192,8 +202,16 @@ func (uh *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps htt
 	return
 }
 
-func (uh *UserHandler) PutUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, err := strconv.Atoi(ps.ByName("id"))
+func (uh *UserHandler) PutUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/flutter-amp/baking-api/comment"
-	"github.com/flutter-amp/baking-api/entity"
+	"github.com/flutteramp/baking-api/comment"
+	"github.com/flutteramp/baking-api/entity"
 )
 
 type CommentService struct {

@@ -5,16 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
-	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 
-	"github.com/flutter-amp/baking-api/entity"
-	"github.com/flutter-amp/baking-api/recipe"
-
-	"github.com/julienschmidt/httprouter"
+	"github.com/flutteramp/baking-api/entity"
+	"github.com/flutteramp/baking-api/recipe"
+	"github.com/gorilla/mux"
 )
 
 type RecipeHandler struct {
@@ -26,10 +23,9 @@ func NewRecipeHandler(rspService recipe.RecipeService) *RecipeHandler {
 	return &RecipeHandler{recipeService: rspService}
 }
 
-func (rh *RecipeHandler) GetRecipes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rh *RecipeHandler) GetRecipes(w http.ResponseWriter, r *http.Request) {
 
 	recipes, errs := rh.recipeService.Recipes()
-	fmt.Println("jummmmpppp")
 	if len(errs) > 0 {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -49,10 +45,17 @@ func (rh *RecipeHandler) GetRecipes(w http.ResponseWriter, r *http.Request, ps h
 	return
 
 }
-func (rh *RecipeHandler) GetIngredients(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, errr := strconv.Atoi(ps.ByName("id"))
+func (rh *RecipeHandler) GetIngredients(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 
-	if errr != nil {
+	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -65,9 +68,9 @@ func (rh *RecipeHandler) GetIngredients(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	output, err := json.MarshalIndent(ingredients, "", "\t\t")
+	output, errr := json.MarshalIndent(ingredients, "", "\t\t")
 
-	if err != nil {
+	if errr != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -79,8 +82,15 @@ func (rh *RecipeHandler) GetIngredients(w http.ResponseWriter, r *http.Request, 
 
 }
 
-func (rh *RecipeHandler) GetSteps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, errr := strconv.Atoi(ps.ByName("id"))
+func (rh *RecipeHandler) GetSteps(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, errr := strconv.Atoi(idParam)
 
 	if errr != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -110,8 +120,16 @@ func (rh *RecipeHandler) GetSteps(w http.ResponseWriter, r *http.Request, ps htt
 }
 
 func (rh *RecipeHandler) GetUserRecipes(w http.ResponseWriter,
-	r *http.Request, ps httprouter.Params) {
-	uid, err := strconv.Atoi(ps.ByName("uid"))
+	r *http.Request) {
+	params := mux.Vars(r)
+	idParam, exists := params["uid"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	uid, err := strconv.Atoi(idParam)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -140,7 +158,7 @@ func (rh *RecipeHandler) GetUserRecipes(w http.ResponseWriter,
 
 }
 
-func (rh *RecipeHandler) PostRecipe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rh *RecipeHandler) PostRecipe(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("recipe handelr")
 
 	l := r.ContentLength
@@ -187,79 +205,85 @@ func (rh *RecipeHandler) PostRecipe(w http.ResponseWriter, r *http.Request, ps h
 }
 
 //post image of recipe
-func (rh *RecipeHandler) PostImage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Println("image here")
-	r.ParseForm()
-	fmt.Println("steppp1")
-	file, handler, err := r.FormFile("file")
-	fmt.Println("steppp2")
-	rid := ps.ByName("id")
+// func (rh *RecipeHandler) PostImage(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("image here")
+// 	r.ParseForm()
+// 	fmt.Println("steppp1")
+// 	file, handler, err := r.FormFile("file")
+// 	fmt.Println("steppp2")
+// 	//rid := ps.ByName("id")
 
-	if err != nil {
-		fmt.Println("HEEEEEEEEEEE222EEEEEE")
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
+// 	if err != nil {
+// 		fmt.Println("HEEEEEEEEEEE222EEEEEE")
+// 		w.Header().Set("Content-Type", "application/json")
+// 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+// 		return
+// 	}
 
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-	id, _ := strconv.Atoi(rid)
-	if err != nil {
-		fmt.Println("conversion")
-	}
-	recipet, errs := rh.recipeService.Recipe(uint(id))
-	if errs != nil {
-		fmt.Println(errs)
-	}
+// 	if err != nil {
+// 		w.Header().Set("Content-Type", "application/json")
+// 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+// 		return
+// 	}
+// 	id, _ := strconv.Atoi(rid)
+// 	if err != nil {
+// 		fmt.Println("conversion")
+// 	}
+// 	recipet, errs := rh.recipeService.Recipe(uint(id))
+// 	if errs != nil {
+// 		fmt.Println(errs)
+// 	}
 
-	fmt.Println(recipet)
+// 	fmt.Println(recipet)
 
-	dst, err := os.Create(filepath.Join("./images/", filepath.Base(rid+""+handler.Filename)))
-	recipet.ImageUrl = filepath.Base(rid + "" + handler.Filename)
-	fmt.Println(recipet)
-	recip, errs := rh.recipeService.UpdateRecipe(recipet)
-	fmt.Println(recip)
-	if len(errs) > 0 {
-		fmt.Println("HEEEEEEEEEEEEEEEE")
-	}
-	defer dst.Close()
-	if _, err = io.Copy(dst, file); err != nil {
-		fmt.Println("erorrrrrrrrrrrrrrrrr")
-		return
-	}
-	// recipe, errs := rh.recipeService.updateImage(recipet, dst)
+// 	dst, err := os.Create(filepath.Join("./images/", filepath.Base(rid+""+handler.Filename)))
+// 	recipet.ImageUrl = filepath.Base(rid + "" + handler.Filename)
+// 	fmt.Println(recipet)
+// 	recip, errs := rh.recipeService.UpdateRecipe(recipet)
+// 	fmt.Println(recip)
+// 	if len(errs) > 0 {
+// 		fmt.Println("HEEEEEEEEEEEEEEEE")
+// 	}
+// 	defer dst.Close()
+// 	if _, err = io.Copy(dst, file); err != nil {
+// 		fmt.Println("erorrrrrrrrrrrrrrrrr")
+// 		return
+// 	}
+// 	// recipe, errs := rh.recipeService.updateImage(recipet, dst)
 
-	// if len(errs) > 0 {
-	// 	//fmt.Println("HEEEEEEEEEEEEEEEE")
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	// 	return
-	// }
+// 	// if len(errs) > 0 {
+// 	// 	//fmt.Println("HEEEEEEEEEEEEEEEE")
+// 	// 	w.Header().Set("Content-Type", "application/json")
+// 	// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+// 	// 	return
+// 	// }
 
-	// output, err := json.MarshalIndent(recipe, "", "\t\t")
+// 	// output, err := json.MarshalIndent(recipe, "", "\t\t")
 
-	// if err != nil {
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	// 	return
-	// }
+// 	// if err != nil {
+// 	// 	w.Header().Set("Content-Type", "application/json")
+// 	// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+// 	// 	return
+// 	// }
 
-	// p := fmt.Sprintf("/recipes/add/%d", recipe.ID)
-	// w.Header().Set("Location", p)
-	// w.WriteHeader(http.StatusCreated)
-	// w.Write(output)
-	// return
-	return
-} // GetSinglerecipe handles
+// 	// p := fmt.Sprintf("/recipes/add/%d", recipe.ID)
+// 	// w.Header().Set("Location", p)
+// 	// w.WriteHeader(http.StatusCreated)
+// 	// w.Write(output)
+// 	// return
+// 	return
+// } // GetSinglerecipe handles
 func (rh *RecipeHandler) GetSingleRecipe(w http.ResponseWriter,
-	r *http.Request, ps httprouter.Params) {
+	r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
-
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -324,41 +348,49 @@ func (rh *RecipeHandler) GetSingleRecipe(w http.ResponseWriter,
 	w.Write(output)
 	return
 }
-func (rh *RecipeHandler) GetImageRecipe(w http.ResponseWriter,
-	r *http.Request, ps httprouter.Params) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
+// func (rh *RecipeHandler) GetImageRecipe(w http.ResponseWriter,
+// 	r *http.Request, ps httprouter.Params) {
 
-	if err != nil {
+// 	id, err := strconv.Atoi(ps.ByName("id"))
+
+// 	if err != nil {
+// 		w.Header().Set("Content-Type", "application/json")
+// 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+// 		return
+// 	}
+
+// 	recipe, errs := rh.recipeService.Recipe(uint(id))
+
+// 	if len(errs) > 0 {
+// 		w.Header().Set("Content-Type", "application/json")
+// 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+// 		return
+// 	}
+
+// 	output, err := json.MarshalIndent(recipe, "", "\t\t")
+
+// 	if err != nil {
+// 		w.Header().Set("Content-Type", "application/json")
+// 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+// 		return
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.Write(output)
+// 	return
+// }
+
+func (rh *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-
-	recipe, errs := rh.recipeService.Recipe(uint(id))
-
-	if len(errs) > 0 {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-
-	output, err := json.MarshalIndent(recipe, "", "\t\t")
-
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(output)
-	return
-}
-
-func (rh *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
-	id, err := strconv.Atoi(ps.ByName("id"))
+	id, err := strconv.Atoi(idParam)
 
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -379,8 +411,15 @@ func (rh *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request, ps
 	return
 }
 
-func (rh *RecipeHandler) PutRecipe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, err := strconv.Atoi(ps.ByName("id"))
+func (rh *RecipeHandler) PutRecipe(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

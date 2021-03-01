@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/flutter-amp/baking-api/comment"
-	"github.com/flutter-amp/baking-api/entity"
-	"github.com/julienschmidt/httprouter"
+	"github.com/flutteramp/baking-api/comment"
+	"github.com/flutteramp/baking-api/entity"
+	"github.com/gorilla/mux"
 )
 
 type CommentHandler struct {
@@ -21,9 +21,16 @@ func NewCommentHandler(cmtService comment.CommentService) *CommentHandler {
 }
 
 func (ch *CommentHandler) GetSingleComment(w http.ResponseWriter,
-	r *http.Request, ps httprouter.Params) {
+	r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -54,7 +61,7 @@ func (ch *CommentHandler) GetSingleComment(w http.ResponseWriter,
 
 //Gets all halls
 func (ch *CommentHandler) GetComments(w http.ResponseWriter,
-	r *http.Request, _ httprouter.Params) {
+	r *http.Request) {
 
 	comments, errs := ch.commentService.Comments()
 
@@ -78,7 +85,7 @@ func (ch *CommentHandler) GetComments(w http.ResponseWriter,
 
 }
 
-func (ch *CommentHandler) PostComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (ch *CommentHandler) PostComment(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("comment handelr")
 
 	l := r.ContentLength
@@ -112,8 +119,16 @@ func (ch *CommentHandler) PostComment(w http.ResponseWriter, r *http.Request, ps
 }
 
 func (ch *CommentHandler) GetCommentsByRecipe(w http.ResponseWriter,
-	r *http.Request, ps httprouter.Params) {
-	rid, err := strconv.Atoi(ps.ByName("rid"))
+	r *http.Request) {
+	params := mux.Vars(r)
+	idParam, exists := params["rid"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	rid, err := strconv.Atoi(idParam)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -142,9 +157,16 @@ func (ch *CommentHandler) GetCommentsByRecipe(w http.ResponseWriter,
 
 }
 
-func (ch *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (ch *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -165,8 +187,15 @@ func (ch *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request, 
 	return
 }
 
-func (ch *CommentHandler) PutComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, err := strconv.Atoi(ps.ByName("id"))
+func (ch *CommentHandler) PutComment(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam, exists := params["id"]
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

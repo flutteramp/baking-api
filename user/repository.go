@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/flutter-amp/baking-api/entity"
+	"github.com/flutteramp/baking-api/entity"
 )
 
 type UserRepository interface {

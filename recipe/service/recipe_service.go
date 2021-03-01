@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 
-	"github.com/flutter-amp/baking-api/entity"
-	"github.com/flutter-amp/baking-api/recipe"
+	"github.com/flutteramp/baking-api/entity"
+	"github.com/flutteramp/baking-api/recipe"
 )
 
 type RecipeService struct {

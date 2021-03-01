@@ -1,9 +1,8 @@
 package repository
 
 import (
-	"github.com/flutter-amp/baking-api/entity"
-	"github.com/flutter-amp/baking-api/user"
-
+	"github.com/flutteramp/baking-api/entity"
+	"github.com/flutteramp/baking-api/user"
 	"github.com/jinzhu/gorm"
 )
 
