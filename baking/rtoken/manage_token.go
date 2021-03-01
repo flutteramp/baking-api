@@ -12,15 +12,6 @@ type CustomClaims struct {
 	jwt.StandardClaims
 }
 
-func NewClaims(sessionId string, expire int64) jwt.Claims {
-	return CustomClaims{
-		sessionId,
-		jwt.StandardClaims{
-			ExpiresAt: expire,
-		},
-	}
-}
-
 func GenerateJwtToken(signingKey []byte, claims jwt.Claims) (string, error) {
 	tn := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedString, err := tn.SignedString(signingKey)

@@ -80,7 +80,10 @@ func main() {
 	router1.HandleFunc("/recipe/comments/{rid}", userHandler.Authenticated(commentHandler.GetCommentsByRecipe)).Methods("GET")
 	router1.HandleFunc("/comments/update/{id}", userHandler.Authenticated(commentHandler.PutComment)).Methods("PUT")
 	router1.HandleFunc("/comments/delete/{id}", userHandler.Authenticated(commentHandler.DeleteComment)).Methods("DELETE")
+
 	router1.HandleFunc("/users/{id}", userHandler.Authenticated(userHandler.GetSingleUser)).Methods("GET")
+	router1.HandleFunc("/users/update/{id}", userHandler.Authenticated(userHandler.PutUser)).Methods("PUT")
+	router1.HandleFunc("/users/delete/{id}", userHandler.Authenticated(userHandler.DeleteUser)).Methods("DELETE")
 
 	router1.HandleFunc("/login", userHandler.Login).Methods("POST")
 	router1.HandleFunc("/signup", userHandler.SignUp).Methods("POST")

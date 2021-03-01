@@ -179,10 +179,12 @@ func (uh *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	idParam, exists := params["id"]
 	if !exists {
 		w.Header().Set("Content-Type", "application/json")
+
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 	id, err := strconv.Atoi(idParam)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
