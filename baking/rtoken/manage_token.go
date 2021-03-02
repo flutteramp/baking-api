@@ -1,6 +1,7 @@
 package Rtoken
 
 import (
+	"fmt"
 	mrand "math/rand"
 	"time"
 
@@ -25,18 +26,27 @@ type CustomClaims struct {
 }
 
 func (t *Service) GenerateJwtToken(claims jwt.Claims) (string, error) {
-	var private = []byte("My secret")
+	fmt.Println("claims")
+	fmt.Println(t.GetClaims("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2IiwiZXhwIjoxNjQ4OTM4MjkyLCJpYXQiOjE2MTQ2Mzc0OTIsIm5iZiI6MTYxNDYzNzQ5Mn0.2GWFqXOB3UI9Z9KK0nE-0TFITvAU-yMePYGFNlwA9GE"))
+	fmt.Println("private key")
+	fmt.Println(t.privateKey)
+	//var private = []byte("My secret")
 	tn := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedString, err := tn.SignedString(private)
+	signedString, err := tn.SignedString(t.privateKey)
 	return signedString, err
 }
 func (t *Service) ValidateToken(signedToken string) (bool, error) {
-	var private = []byte("My secret")
+	//var private = []byte("My secret")
+	fmt.Println("private key")
+	fmt.Println(t.privateKey)
 	token, err := jwt.ParseWithClaims(signedToken, &CustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
-		return private, nil
+		return t.privateKey, nil
 	})
 	if err != nil {
+
+		fmt.Println("error at validate")
 		return false, err
+
 	}
 
 	if _, ok := token.Claims.(*CustomClaims); !ok || token.Valid {

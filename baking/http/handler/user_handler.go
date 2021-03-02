@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -71,29 +72,17 @@ func (uh *UserHandler) Authenticated(next http.HandlerFunc) http.HandlerFunc {
 	// validate the token
 
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		// token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2IiwiZXhwIjoxNjQ4OTMyMzA4LCJpYXQiOjE2MTQ2MzE1MDgsIm5iZiI6MTYxNDYzMTUwOH0.JjR0VofIMkzA_70MLSm02Qx49bb4domH8v-opLUhJdw"
-		// check, err := uh.tokenService.ValidateToken(token)
-		// if !check {
-		// 	fmt.Println("not authenticated")
-		// 	w.Header().Set("Content-Type", "application/json")
-		// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		// 	return
 
-		// }
-		// if err != nil {
-		// 	fmt.Println("error")
-
-		// 	w.Header().Set("Content-Type", "application/json")
-		// 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		// 	return
-		// }
-		// _token := r.Header.Get("Authorization")
-		// _token = strings.Replace(_token, "Bearer ", "", 1)
-		// // valid, err := uh.tokenService.ValidateToken(_token)
-		// // if err != nil && !valid {
-		// //   responses.ERROR(w, http.StatusUnauthorized, errors.New("unauthenticated: unauthorized to access the resource, log in again"))
-		// //   return
-		// // }
+		_token := r.Header.Get("Authorization")
+		_token = strings.Replace(_token, "Bearer ", "", 1)
+		fmt.Println(_token)
+		valid, err := uh.tokenService.ValidateToken(_token)
+		if err != nil && !valid {
+			fmt.Println("something is wrong")
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, http.StatusText(http.StatusNetworkAuthenticationRequired), http.StatusNetworkAuthenticationRequired)
+			return
+		}
 		next.ServeHTTP(w, r)
 
 	}
