@@ -170,14 +170,6 @@ func (rh *RecipeHandler) PostRecipe(w http.ResponseWriter, r *http.Request) {
 	// for i := 0; i < recipe..length; i++ {
 	// 	fmt.Println("gooooooooooooooooooooooooo")
 	// }
-	fmt.Println("image1")
-	fmt.Println(recipe.ImageUrl1)
-	fmt.Println("image2")
-	fmt.Println(recipe.ImageUrl2)
-	fmt.Println("image3")
-	fmt.Println(recipe.ImageUrl3)
-	fmt.Println("image4")
-	fmt.Println(recipe.ImageUrl4)
 
 	fmt.Println(recipe)
 
