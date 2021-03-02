@@ -37,8 +37,7 @@ func (t *Service) GenerateJwtToken(claims jwt.Claims) (string, error) {
 }
 func (t *Service) ValidateToken(signedToken string) (bool, error) {
 	//var private = []byte("My secret")
-	fmt.Println("private key")
-	fmt.Println(t.privateKey)
+
 	token, err := jwt.ParseWithClaims(signedToken, &CustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return t.privateKey, nil
 	})

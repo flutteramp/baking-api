@@ -8,10 +8,13 @@ type Recipe struct {
 	ID          uint   `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
 	UserID      uint   `json:"userid"`
 	Title       string `json:"title" gorm:"type:varchar(255);not null"`
-	Duration    string `json:"duration" gorm:"type:varchar(255);not null"`
+	Duration    string `json:"duration" gorm:"type:varchar(100000);not null"`
 	Servings    int    `json:"servings"`
 	RecipeUser  uint   `json:"recipeuserid" gorm:"type:varchar(255);not null`
-	ImageUrl    string `json:"imageUrl" gorm:"type:varchar(255);not null"`
+	ImageUrl1   string `json:"imageUrl1" gorm:"type:varchar(4000000);not null"`
+	ImageUrl2   string `json:"imageUrl2" gorm:"type:varchar(4000000);not null"`
+	ImageUrl3   string `json:"imageUrl3" gorm:"type:varchar(4000000);not null"`
+	ImageUrl4   string `json:"imageUrl4" gorm:"type:varchar(4000000);not null"`
 	Comments    []Comment
 	Ingredients []Ingredient
 	Steps       []Step

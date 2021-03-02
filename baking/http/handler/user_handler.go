@@ -75,7 +75,7 @@ func (uh *UserHandler) Authenticated(next http.HandlerFunc) http.HandlerFunc {
 
 		_token := r.Header.Get("Authorization")
 		_token = strings.Replace(_token, "Bearer ", "", 1)
-		fmt.Println(_token)
+
 		valid, err := uh.tokenService.ValidateToken(_token)
 		if err != nil && !valid {
 			fmt.Println("something is wrong")
@@ -258,4 +258,18 @@ func (uh *UserHandler) PutUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(output)
 	return
+}
+func (uh *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	_token := r.Header.Get("Authorization")
+	_token = strings.Replace(_token, "Bearer ", "", 1)
+	claim, err := uh.tokenService.GetClaims(_token)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	fmt.Println(time.Now().Unix() - claim.ExpiresAt)
+	claim.ExpiresAt = time.Now().Unix()
+	fmt.Println(claim.ExpiresAt)
+	fmt.Println("User logged out")
 }

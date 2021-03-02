@@ -88,6 +88,7 @@ func main() {
 
 	router1.HandleFunc("/login", userHandler.Login).Methods("POST")
 	router1.HandleFunc("/signup", userHandler.SignUp).Methods("POST")
+	router1.HandleFunc("/logout", userHandler.Authenticated(userHandler.Logout)).Methods("POST")
 	http.ListenAndServe(":8181", router1)
 
 	// router.GET("/recipes", recipeHandler.GetRecipes)
